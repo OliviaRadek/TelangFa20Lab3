@@ -1,0 +1,87 @@
+;lab 3
+;sort credit hours from least to greatest
+;student id in bits [15-8], student hours in [7-0]
+;address of ids start at x4004
+
+;R0 is what youre comparing to
+;R1 is items you are completing down the array
+;R2 is the memory at R0
+;R3 is the memory at R1
+;R4 is used in COMPARE to see if the two values need to switch or not
+;R5 
+;R6
+.Orig x3000
+
+LD R0, TopNum
+LD R1, NumTwo ;loading first two registers
+
+BACK LDR R2, R0, #0
+LD R4, Mask1 ;make R4 into the masking value xFF00
+AND R2, R2, R4
+BRZ DONE      ;if R2 starts with 0, branch to halt
+
+Return LDR R3, R1, #0 
+AND R3, R3, R4
+BRnp  Next    ;if Comparing number starts with 0, go back with new starting memory locations
+Add R0, R0, #1
+Add R1, R1, #1 
+BR Back
+
+Next LDR R2, R0, #0
+LDR R3, R1, #0
+AND R4, R4, #0
+JSR COMPARE  ;Calls Compare
+ADD R4, R4, #0
+BRP SWITCH
+ADD R1, R1, #1 
+BR Return
+
+SWITCH STR R3, R0, #1
+STR R2, R0, #0
+ADD R1, R1, #1 
+BR Return
+ 
+Done Halt 
+
+TopNum .Fill x4004
+NumTwo .Fill x4005
+Mask1  .Fill b1111111100000000
+
+;
+; Compare Subroutine
+;
+
+COMPARE ST R2, Save1
+ST R3, Save2
+ST R5, Save3
+ST R6, Save4
+
+LD R4, Mask2
+AND R5, R2, R4
+AND R6, R3, R4
+AND R4, R4, #0
+
+NOT R6, R6
+Add R6, R6, #1
+Add R5, R5, R6
+BRP Pos
+Add R4, R4, #0
+Pos Add R4, R4, #1
+
+LD R2, Save1
+LD R3, Save2
+LD R5, Save3
+LD R6, Save4
+
+RET
+
+
+
+
+Save1 .Fill x0
+Save2 .Fill x0
+Save3 .Fill x0
+Save4 .Fill x0
+Mask2  .Fill b0000000011111111
+
+.END
